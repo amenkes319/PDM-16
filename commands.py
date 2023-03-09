@@ -9,7 +9,7 @@ class Command:
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
-            "done": self._done,
+            "quit": None,
         }
         self.commandArgCount = {
             "help": 0,
@@ -20,6 +20,9 @@ class Command:
         }
 
     def execute(self, command, args):
+        if command == "quit":
+            return True
+
         if command not in self.commands or len(args) != self.commandArgCount[command]:
             self.commands["help"]()
             return False
@@ -33,11 +36,8 @@ class Command:
             "signup <username> <password> <firstname> <lastname> <email>": creates a new account
             "createCollection <username> <name>": creates a new collection
             "listCollections <username>": lists all collections
-            "search <searchterm>": searches for a collection""")
-
-    def _done(self):
-        # shouldn't do anything
-        pass
+            "search <searchterm>": searches for a collection
+            "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
         self.curs.execute(
@@ -50,10 +50,9 @@ class Command:
     def _createCollection(self, username, name):
         self.curs.execute(
             """
-            SELECT MAX(CollectionID)
+            SELECT COALESCE(MAX(CollectionID), 0) AS max_collection_id
             FROM Collection
             WHERE Username = %s
-            GROUP BY Username
             """, (username,))
         
         collectionID = self.curs.fetchone()[0]
@@ -69,15 +68,6 @@ class Command:
             """, (collectionID, username, name))
         self.conn.commit()
 
-
-    """
-    Users will be able to see the list of all their collections by name in ascending order.
-    The list must show the following information per collection:
-    Collection's name
-    Number of songs in the collection
-    Total duration in minutes
-    Total size in MB
-    """
     def _listCollection(self, username):
         self.curs.execute(
             """

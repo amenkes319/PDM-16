@@ -15,6 +15,30 @@ def login():
     password = login.get("password")
     return username, password
 
+def combineQuotedArgs(argsList):
+    newArgs = []
+    inQuotes = False
+    currentArg = ""
+
+    for arg in argsList:
+        if inQuotes:
+            currentArg += " " + arg
+            if arg.endswith(currentArg[0]) and len(currentArg) > 1:
+                inQuotes = False
+                newArgs.append(currentArg[1:-1])
+                currentArg = ""
+        else:
+            if arg.startswith('"') or arg.startswith("'"):
+                inQuotes = True
+                currentArg = arg.strip(arg[0])
+            else:
+                newArgs.append(arg)
+
+    if inQuotes:
+        newArgs.append(currentArg[:-1])
+
+    return newArgs
+
 def main():
     username, password = login()
     dbName = "p320_16"
@@ -40,14 +64,12 @@ def main():
             running = True
             command = Command(conn)
             while running:
-                userInput = input("Command ('help' to list): ")
+                userInput = input("> ")
                 cmd = userInput.split(" ")[0]
                 args = userInput.split(" ")[1:]
+                args = combineQuotedArgs(args)
                 valid = command.execute(cmd, args)
-                if cmd == "done":
-                    running = False
     except Exception as e:
-        print(e)
         print("Connection failed")
     finally:
         conn.close()
