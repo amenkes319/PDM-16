@@ -18,12 +18,21 @@ class Command:
         self.commands[command](*args)
         return True
 
-    def _createAccount(self, user, pw, firstname, lastname, email):
-        self.curs.execute("INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime) VALUES (%s, %s, %s, %s, %s, %s, %s)", (user, pw, firstname, lastname, email, "now()", "now()"))
+    def _createAccount(self, username, password, firstname, lastname, email):
+        self.curs.execute("INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime) VALUES (%s, %s, %s, %s, %s, %s, %s)", (username, password, firstname, lastname, email, "now()", "now()"))
         self.conn.commit()
 
-    def _createCollection(self):
-        pass
+    def _createCollection(self, username, name):
+        self.curs.execute("SELECT MAX(CollectionID) FROM Collection WHERE Username = %s GROUP BY Username", (username,))
+        
+        collectionID = self.curs.fetchone()[0]
+        if collectionID is None:
+            collectionID = 1
+        else:
+            collectionID += 1
+
+        self.curs.execute("INSERT INTO Collection (CollectionID, Username, Name) VALUES (%s, %s, %s)", (collectionID, username, name))
+        self.conn.commit()
 
     def _listCollection(self):
         pass
