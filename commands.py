@@ -24,9 +24,6 @@ class Command:
             self.commands["help"]()
             return False
 
-        if len(args) != self.argNums[command]:
-            return False
-
         self.commands[command](*args)
         return True
 

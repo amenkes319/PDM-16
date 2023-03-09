@@ -46,8 +46,6 @@ def main():
                 valid = command.execute(cmd, args)
                 if cmd == "done":
                     running = False
-                if not valid:
-                    print("Invalid Command or Arguments")
     except Exception as e:
         print(e)
         print("Connection failed")
