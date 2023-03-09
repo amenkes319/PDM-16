@@ -2,17 +2,21 @@ from configparser import ConfigParser
 import psycopg2
 from sshtunnel import SSHTunnelForwarder
 
-def main():
+def login():
     login = {"username": " ", "password": " "}
     parser = ConfigParser()
     parser.read('ssh_login.ini')
     params = parser.items('login')
-    dbName = "p320_16"
 
     for param in params:
         login[param[0]] = param[1]
     username = login.get("username")
     password = login.get("password")
+    return username, password
+
+def main():
+    username, password = login()
+    dbName = "p320_16"
 
     try:
         with SSHTunnelForwarder(('starbug.cs.rit.edu', 22),
