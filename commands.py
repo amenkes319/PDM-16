@@ -3,14 +3,6 @@ class Command:
     def __init__(self, conn):
         self.conn = conn
         self.curs = conn.cursor()
-        self.argNums = {
-            "help": 0,
-            "signup": 5,
-            "createCollection": 0,
-            "listCollections": 0,
-            "search": 0,
-            "done": 0,
-        }
         self.commands = {
             "help": self._help,
             "signup": self._createAccount,
