@@ -10,8 +10,13 @@ class Command:
             "search": self._search,
         }
 
+    
     def execute(self, command, *args):
+        if command not in self.commands:
+            return False
+        
         self.commands[command](*args)
+        return True
 
     def _createAccount(self, user, pw, firstname, lastname, email):
         self.curs.execute("INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime) VALUES (%s, %s, %s, %s, %s, %s, %s)", (user, pw, firstname, lastname, email, "now()", "now()"))
