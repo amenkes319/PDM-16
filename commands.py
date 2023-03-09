@@ -20,13 +20,19 @@ class Command:
 
     def execute(self, command, args):
         if command not in self.commands or len(args) != self.commandArgCount[command]:
+            self.commands["help"]()
             return False
 
         self.commands[command](*args)
         return True
 
     def _help(self):
-        print("Help!")
+        print("Commands:\n"
+            "\t\"help\": prints this message\n"
+            "\t\"signup <username> <password> <firstname> <lastname> <email>\": creates a new account\n"
+            "\t\"createCollection <username> <name>\": creates a new collection\n"
+            "\t\"listCollections\": lists all collections\n"
+            "\t\"search\": searches for a collection")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
         self.curs.execute(

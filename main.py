@@ -38,10 +38,11 @@ def main():
             print("Database connection established")
 
             command = Command(conn)
-            userInput = input("Command ('help' to list): ")
-            cmd = userInput.split(" ")[0]
-            args = userInput.split(" ")[1:]
-            command.execute(cmd, args)
+            while True:
+                userInput = input("> ")
+                cmd = userInput.split(" ")[0]
+                args = userInput.split(" ")[1:]
+                command.execute(cmd, args)
     except Exception as e:
         print(e)
         print("Connection failed")
