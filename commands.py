@@ -4,22 +4,27 @@ class Command:
         self.conn = conn
         self.curs = conn.cursor()
         self.commands = {
+            "help": self._help,
             "signup": self._createAccount,
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
         }
 
-    
-    def execute(self, command, *args):
+    def execute(self, command, args):
         if command not in self.commands:
             return False
-        
+
         self.commands[command](*args)
         return True
 
+    def _help(self):
+        print("Help!")
+
     def _createAccount(self, user, pw, firstname, lastname, email):
-        self.curs.execute("INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime) VALUES (%s, %s, %s, %s, %s, %s, %s)", (user, pw, firstname, lastname, email, "now()", "now()"))
+        self.curs.execute(
+            "INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (user, pw, firstname, lastname, email, "now()", "now()"))
         self.conn.commit()
 
     def _createCollection(self):

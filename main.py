@@ -38,8 +38,12 @@ def main():
             print("Database connection established")
 
             command = Command(conn)
-            command.execute("signup", "test", "test", "test", "test", "test")
-    except:
+            userInput = input("Command ('help' to list): ")
+            cmd = userInput.split(" ")[0]
+            args = userInput.split(" ")[1:]
+            command.execute(cmd, args)
+    except Exception as e:
+        print(e)
         print("Connection failed")
     finally:
         conn.close()
