@@ -37,12 +37,15 @@ def main():
             conn = psycopg2.connect(**params)
             print("Database connection established")
 
+            running = True
             command = Command(conn)
-            while True:
-                userInput = input("> ")
+            while running:
+                userInput = input("Command ('help' to list): ")
                 cmd = userInput.split(" ")[0]
                 args = userInput.split(" ")[1:]
-                command.execute(cmd, args)
+                valid = command.execute(cmd, args)
+                if cmd == "done":
+                    running = False
     except Exception as e:
         print(e)
         print("Connection failed")

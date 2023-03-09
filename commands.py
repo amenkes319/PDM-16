@@ -9,6 +9,7 @@ class Command:
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
+            "done": self._done,
         }
         self.commandArgCount = {
             "help": 0,
@@ -33,6 +34,10 @@ class Command:
             "createCollection <username> <name>": creates a new collection
             "listCollections <username>": lists all collections
             "search <searchterm>": searches for a collection""")
+
+    def _done(self):
+        # shouldn't do anything
+        pass
 
     def _createAccount(self, user, pw, firstname, lastname, email):
         self.curs.execute(
