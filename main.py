@@ -1,3 +1,4 @@
+from commands import Command
 from configparser import ConfigParser
 import psycopg2
 from sshtunnel import SSHTunnelForwarder
@@ -14,7 +15,7 @@ def login():
     password = login.get("password")
     return username, password
 
-def connect():
+def main():
     username, password = login()
     dbName = "p320_16"
 
@@ -34,20 +35,14 @@ def connect():
             }
 
             conn = psycopg2.connect(**params)
-            curs = conn.cursor()
             print("Database connection established")
-            curs.execute("SELECT * FROM account")
-            print(curs.fetchall())
+
+            command = Command(conn)
+            command.createAccount("test", "test", "test", "test", "test")
     except:
         print("Connection failed")
     finally:
         conn.close()
-    
-    return curs
-
-def main():
-    curs = connect()
-
 
 if __name__ == '__main__':
     main()
