@@ -14,7 +14,7 @@ def login():
     password = login.get("password")
     return username, password
 
-def main():
+def connect():
     username, password = login()
     dbName = "p320_16"
 
@@ -42,6 +42,11 @@ def main():
         print("Connection failed")
     finally:
         conn.close()
+    
+    return curs
+
+def main():
+    curs = connect()
 
 
 if __name__ == '__main__':
