@@ -38,7 +38,7 @@ def main():
             print("Database connection established")
 
             command = Command(conn)
-            command.createAccount("test", "test", "test", "test", "test")
+            command.execute("signup", "test", "test", "test", "test", "test")
     except:
         print("Connection failed")
     finally:
