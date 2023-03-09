@@ -10,9 +10,16 @@ class Command:
             "listCollections": self._listCollection,
             "search": self._search,
         }
+        self.commandArgCount = {
+            "help": 0,
+            "signup": 5,
+            "createCollection": 2,
+            "listCollections": 0,
+            "search": 0,
+        }
 
     def execute(self, command, args):
-        if command not in self.commands:
+        if command not in self.commands or len(args) != self.commandArgCount[command]:
             return False
 
         self.commands[command](*args)
