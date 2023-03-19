@@ -1,6 +1,5 @@
 class Command:
     #missing commands:
-    #remove song from collection
     #rename collection
     #delete collection
 
@@ -20,6 +19,7 @@ class Command:
             "listCollections": self._listCollection,
             "addToCollection": self._addToCollection,
             "removeFromCollection": self._removeFromCollection,
+            "deleteCollection": self._deleteCollection,
             "search": self._search,
             "quit": None,
         }
@@ -35,6 +35,7 @@ class Command:
             "listCollections": 1,
             "addToCollection": 2,
             "removeFromCollection": 2,
+            "deleteCollection": 1,
             "search": 1,
         }
 
@@ -47,6 +48,22 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _deleteCollection(self, collection):
+        if self.username == None:
+            print("Login to delete a collection.")
+            return True
+        
+        self.curs.execute(
+            """
+            DELETE FROM collection
+            WHERE name = %s AND
+            username = %s
+            """, (collection, self.username))
+        self.conn.commit()
+        print("Deleted collection")
+
         return True
 
     def _removeFromCollection(self, collection, song):
@@ -288,6 +305,7 @@ class Command:
             "play <title>": listen to a song
             "playCollection <name>": listen to an entire collection of songs
             "createCollection <name>": creates a new collection
+            "deleteCollection <name>": deletes a collection
             "listCollections <username>": lists all collections
             "addToCollection <collection> <title>": add a song to a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
