@@ -1,8 +1,4 @@
 class Command:
-    #missing commands:
-    #rename collection
-    #delete collection
-
     def __init__(self, conn):
         self.conn = conn
         self.curs = conn.cursor()
@@ -20,6 +16,7 @@ class Command:
             "addToCollection": self._addToCollection,
             "removeFromCollection": self._removeFromCollection,
             "deleteCollection": self._deleteCollection,
+            "renameCollection": self._renameCollection,
             "search": self._search,
             "quit": None,
         }
@@ -36,6 +33,7 @@ class Command:
             "addToCollection": 2,
             "removeFromCollection": 2,
             "deleteCollection": 1,
+            "renameCollection": 2,
             "search": 1,
         }
 
@@ -48,6 +46,35 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _renameCollection(self, collectionName, newName):
+        if self.username == None:
+            print("Login to rename a collection.")
+            return True
+        
+        self.curs.execute(
+            """
+            SELECT * FROM collection
+            WHERE name LIKE %s AND
+            username LIKE %s
+            """, (collectionName, self.username))
+        
+        collectionData = self.curs.fetchone()
+        if collectionData == None:
+            print("Couldn't find collection")
+            return False
+    
+        collectionid = collectionData[0]
+        self.curs.execute(
+            """
+            UPDATE collection
+            SET name = %s
+            WHERE collectionid = %s AND
+            username LIKE %s
+            """, (newName, collectionid, self.username))
+        self.conn.commit()
+        print("Renamed collection")
         return True
 
     def _deleteCollection(self, collection):
@@ -309,6 +336,7 @@ class Command:
             "listCollections <username>": lists all collections
             "addToCollection <collection> <title>": add a song to a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
+            "renameCollection <oldname> <newname>": rename a collection
             "search <searchterm>": searches for a collection
             "quit": quits the program""")
 
