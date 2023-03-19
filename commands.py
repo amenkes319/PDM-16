@@ -1,4 +1,8 @@
 class Command:
+    #missing commands:
+    #remove song from collection
+    #rename collection
+    #delete collection
 
     def __init__(self, conn):
         self.conn = conn
@@ -14,6 +18,7 @@ class Command:
             "playCollection": self._playCollection,
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
+            "addToCollection": self._addToCollection,
             "search": self._search,
             "quit": None,
         }
@@ -27,6 +32,7 @@ class Command:
             "playCollection": 1,
             "createCollection": 1,
             "listCollections": 1,
+            "addToCollection": 2,
             "search": 1,
         }
 
@@ -39,6 +45,46 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _addToCollection(self, collection, song):
+        if self.username == None:
+            print("Login to add to a collection.")
+            return True
+        
+        self.curs.execute(
+            """
+            SELECT * FROM song
+            WHERE title LIKE %s
+            """, (song,))
+        
+        songData = self.curs.fetchone()
+        if songData == None:
+            print("Couldn't find song")
+            return False
+
+        self.curs.execute(
+            """
+            SELECT * FROM collection
+            WHERE name LIKE %s AND
+            username LIKE %s
+            """, (collection, self.username))
+        
+        collectionData = self.curs.fetchone()
+        if collectionData == None:
+            print("Couldn't find collection")
+            return False
+        
+        songid = songData[0]
+        collectionid = collectionData[0]
+        self.curs.execute(
+            """
+            INSERT INTO collectioncontains(collectionid, username, songid)
+            VALUES (%s, %s, %s)
+            """, (collectionid, self.username, songid))
+        self.conn.commit()
+        print("Added song to collection")
+
         return True
 
     def _play(self, song):
@@ -199,6 +245,7 @@ class Command:
             "playCollection <name>": listen to an entire collection of songs
             "createCollection <name>": creates a new collection
             "listCollections <username>": lists all collections
+            "addToCollection <collection> <title>": add a song to a collection
             "search <searchterm>": searches for a collection
             "quit": quits the program""")
 
