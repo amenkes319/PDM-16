@@ -41,12 +41,21 @@ class Command:
             a.password = %s
             """, (username, password))
         
-        success = self.curs.fetchone()
-        if (success == None):
+        accountData = self.curs.fetchone()
+        if (accountData == None):
+            print("Incorrect login information")
             return False
         
-        print("Logged in as: " + success[0])
-        self.username = success[0]
+        self.curs.execute(
+            """
+            UPDATE account
+            SET lastaccessdatetime = %s
+            WHERE username = %s
+            """, ("now()", username))
+        self.conn.commit()
+
+        print("Logged in as: " + accountData[0])
+        self.username = accountData[0]
         return True
 
     def _help(self):

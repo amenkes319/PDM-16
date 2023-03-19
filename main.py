@@ -70,8 +70,10 @@ def main():
                 args = combineQuotedArgs(args)
                 valid = command.execute(cmd, args)
     except Exception as e:
+        print(e)
         print("Connection failed")
     finally:
+        print("Connection closed")
         conn.close()
 
 if __name__ == '__main__':
