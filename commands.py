@@ -10,6 +10,7 @@ class Command:
             "login": self._login,
             "follow": self._follow,
             "unfollow": self._unfollow,
+            "play": self._play,
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
@@ -21,6 +22,7 @@ class Command:
             "login": 2,
             "follow": 1,
             "unfollow": 1,
+            "play": 1,
             "createCollection": 1,
             "listCollections": 1,
             "search": 1,
@@ -35,6 +37,33 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _play(self, song):
+        if self.username == None:
+            print("Login to play music")
+            return True
+        
+        self.curs.execute(
+            """
+            SELECT * FROM song
+            WHERE title LIKE %s
+            """, (song,))
+        
+        songData = self.curs.fetchone()
+
+        if songData == None:
+            print("Couldn't find any songs by that title")
+            return True
+        songid = songData[0]
+            
+        self.curs.execute(
+            """
+            INSERT INTO listen(username, songid, listendatetime)
+            VALUES (%s, %s, %s)
+            """, (self.username, songid, "now()"))
+        self.conn.commit()
+        print("Listened to:", song)
         return True
 
     def _follow(self, otheruser):
@@ -122,6 +151,7 @@ class Command:
             "login <username> <password>": login in as username
             "follow <username>": follow another user
             "unfollow <username>": unfollow another user
+            "play <title>": listen to a song
             "createCollection <name>": creates a new collection
             "listCollections <username>": lists all collections
             "search <searchterm>": searches for a collection
