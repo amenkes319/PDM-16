@@ -8,6 +8,8 @@ class Command:
             "help": self._help,
             "signup": self._createAccount,
             "login": self._login,
+            "follow": self._follow,
+            "unfollow": self._unfollow,
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
@@ -17,6 +19,8 @@ class Command:
             "help": 0,
             "signup": 5,
             "login": 2,
+            "follow": 1,
+            "unfollow": 1,
             "createCollection": 1,
             "listCollections": 1,
             "search": 1,
@@ -31,6 +35,59 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _follow(self, otheruser):
+        if self.username == None:
+            print("Login to follow another user")
+            return True
+
+        self.curs.execute(
+            """
+            SELECT * FROM following
+            WHERE followerusername = %s AND
+            followedusername = %s
+            """, (self.username, otheruser))
+        
+        followingData = self.curs.fetchone()
+        if (followingData != None):
+            print("You are already following that user")
+            return False
+
+        self.curs.execute(
+            """
+            INSERT INTO following(followerusername, followedusername)
+            VALUES (%s, %s)
+            """, (self.username, otheruser))
+        self.conn.commit()
+        print("You are now following: ", otheruser)
+        return True
+    
+    def _unfollow(self, otheruser):
+        if self.username == None:
+            print("Login to unfollow another user")
+            return True
+
+        self.curs.execute(
+            """
+            SELECT * FROM following
+            WHERE followerusername = %s AND
+            followedusername = %s
+            """, (self.username, otheruser))
+        
+        followingData = self.curs.fetchone()
+        if (followingData == None):
+            print("You not following that user")
+            return False
+
+        self.curs.execute(
+            """
+            DELETE FROM following
+            WHERE followerusername = %s AND
+            followedusername = %s
+            """, (self.username, otheruser))
+        self.conn.commit()
+        print("Unfollowed: ", otheruser)
         return True
 
     def _login(self, username, password):
@@ -62,7 +119,9 @@ class Command:
         print("""Commands:
             "help": prints this message
             "signup <username> <password> <firstname> <lastname> <email>": creates a new account
-            "login <username> <password.": login in as username
+            "login <username> <password>": login in as username
+            "follow <username>": follow another user
+            "unfollow <username>": unfollow another user
             "createCollection <name>": creates a new collection
             "listCollections <username>": lists all collections
             "search <searchterm>": searches for a collection
