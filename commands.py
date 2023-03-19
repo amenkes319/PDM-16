@@ -19,6 +19,7 @@ class Command:
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "addToCollection": self._addToCollection,
+            "removeFromCollection": self._removeFromCollection,
             "search": self._search,
             "quit": None,
         }
@@ -33,6 +34,7 @@ class Command:
             "createCollection": 1,
             "listCollections": 1,
             "addToCollection": 2,
+            "removeFromCollection": 2,
             "search": 1,
         }
 
@@ -47,6 +49,48 @@ class Command:
         self.commands[command](*args)
         return True
 
+    def _removeFromCollection(self, collection, song):
+        if self.username == None:
+            print("Login to remove a song from a collection.")
+            return True
+        
+        self.curs.execute(
+            """
+            SELECT * FROM song
+            WHERE title LIKE %s
+            """, (song,))
+        
+        songData = self.curs.fetchone()
+        if songData == None:
+            print("Couldn't find song")
+            return False
+
+        self.curs.execute(
+            """
+            SELECT * FROM collection
+            WHERE name LIKE %s AND
+            username LIKE %s
+            """, (collection, self.username))
+        
+        collectionData = self.curs.fetchone()
+        if collectionData == None:
+            print("Couldn't find collection")
+            return False
+        
+        songid = songData[0]
+        collectionid = collectionData[0]
+        self.curs.execute(
+            """
+            DELETE FROM collectioncontains
+            WHERE collectionid = %s AND
+            username = %s AND
+            songid = %s
+            """, (collectionid, self.username, songid))
+        self.conn.commit()
+        print("Removed song from collection")
+
+        return True
+    
     def _addToCollection(self, collection, song):
         if self.username == None:
             print("Login to add to a collection.")
@@ -246,6 +290,7 @@ class Command:
             "createCollection <name>": creates a new collection
             "listCollections <username>": lists all collections
             "addToCollection <collection> <title>": add a song to a collection
+            "removeFromCollection <collection> <title>": remove a song from a collection
             "search <searchterm>": searches for a collection
             "quit": quits the program""")
 
