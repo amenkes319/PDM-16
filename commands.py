@@ -3,9 +3,11 @@ class Command:
     def __init__(self, conn):
         self.conn = conn
         self.curs = conn.cursor()
+        self.username = None
         self.commands = {
             "help": self._help,
             "signup": self._createAccount,
+            "login": self._login,
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
@@ -14,7 +16,8 @@ class Command:
         self.commandArgCount = {
             "help": 0,
             "signup": 5,
-            "createCollection": 2,
+            "login": 2,
+            "createCollection": 1,
             "listCollections": 1,
             "search": 1,
         }
@@ -30,11 +33,28 @@ class Command:
         self.commands[command](*args)
         return True
 
+    def _login(self, username, password):
+        self.curs.execute(
+            """
+            SELECT * FROM account as a 
+            WHERE a.username = %s AND
+            a.password = %s
+            """, (username, password))
+        
+        success = self.curs.fetchone()
+        if (success == None):
+            return False
+        
+        print("Logged in as: " + success[0])
+        self.username = success[0]
+        return True
+
     def _help(self):
         print("""Commands:
             "help": prints this message
             "signup <username> <password> <firstname> <lastname> <email>": creates a new account
-            "createCollection <username> <name>": creates a new collection
+            "login <username> <password.": login in as username
+            "createCollection <name>": creates a new collection
             "listCollections <username>": lists all collections
             "search <searchterm>": searches for a collection
             "quit": quits the program""")
@@ -47,13 +67,16 @@ class Command:
             """, (user, pw, firstname, lastname, email, "now()", "now()"))
         self.conn.commit()
 
-    def _createCollection(self, username, name):
+    def _createCollection(self, name):
+        if self.username == None:
+            print("Login to create a collection.")
+            return True
         self.curs.execute(
             """
             SELECT COALESCE(MAX(CollectionID), 0) AS max_collection_id
             FROM Collection
             WHERE Username = %s
-            """, (username,))
+            """, (self.username,))
         
         collectionID = self.curs.fetchone()[0]
         if collectionID is None:
@@ -65,7 +88,7 @@ class Command:
             """
             INSERT INTO Collection (CollectionID, Username, Name)
             VALUES (%s, %s, %s)
-            """, (collectionID, username, name))
+            """, (collectionID, self.username, name))
         self.conn.commit()
 
     def _listCollection(self, username):
