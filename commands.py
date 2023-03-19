@@ -11,6 +11,7 @@ class Command:
             "follow": self._follow,
             "unfollow": self._unfollow,
             "play": self._play,
+            "playCollection": self._playCollection,
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "search": self._search,
@@ -23,6 +24,7 @@ class Command:
             "follow": 1,
             "unfollow": 1,
             "play": 1,
+            "playCollection": 1,
             "createCollection": 1,
             "listCollections": 1,
             "search": 1,
@@ -64,6 +66,48 @@ class Command:
             """, (self.username, songid, "now()"))
         self.conn.commit()
         print("Listened to:", song)
+        return True
+
+    def _playCollection(self, collection):
+        if self.username == None:
+            print("Login to play music")
+            return True
+        
+        self.curs.execute(
+            """
+            SELECT * FROM collection
+            WHERE name LIKE %s AND
+            username LIKE %s
+            """, (collection, self.username))
+        
+        collectionData = self.curs.fetchone()
+
+        if collectionData == None:
+            print("Couldn't find collections by that name")
+            return True
+        collectionId = collectionData[0]
+
+        self.curs.execute(
+            """
+            SELECT songid FROM collectioncontains
+            WHERE collectionid = %s
+            AND username = %s
+            """, (collectionId, self.username))
+        
+        collectionSongIds = self.curs.fetchall()
+        if collectionSongIds == None:
+            print("No songs in collection")
+            return False
+        
+        for songid in collectionSongIds:
+            self.curs.execute(
+                """
+                INSERT INTO listen(username, songid, listendatetime)
+                VALUES (%s, %s, %s)
+                """, (self.username, songid, "now()"))
+            self.conn.commit()
+        print("Listened to entire collection")
+
         return True
 
     def _follow(self, otheruser):
@@ -152,6 +196,7 @@ class Command:
             "follow <username>": follow another user
             "unfollow <username>": unfollow another user
             "play <title>": listen to a song
+            "playCollection <name>": listen to an entire collection of songs
             "createCollection <name>": creates a new collection
             "listCollections <username>": lists all collections
             "search <searchterm>": searches for a collection
