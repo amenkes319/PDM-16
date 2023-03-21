@@ -349,7 +349,7 @@ class Command:
             "addToCollection <collection> <title>": add a song to a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
             "renameCollection <oldname> <newname>": rename a collection
-            "search <searchterm>": searches for a collection
+            "search <searchterm>": searches for a song
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
