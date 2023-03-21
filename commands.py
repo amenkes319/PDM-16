@@ -1,6 +1,9 @@
 import hashlib
 
 class Command:
+    # add album to collection
+    # remove album from collection
+    # sort and sorting direction param for search
     def __init__(self, conn):
         self.conn = conn
         self.curs = conn.cursor()
@@ -18,6 +21,7 @@ class Command:
             "createCollection": self._createCollection,
             "listCollections": self._listCollection,
             "addToCollection": self._addToCollection,
+            "addAlbumToCollection": self._addAlbumToCollection,
             "removeFromCollection": self._removeFromCollection,
             "deleteCollection": self._deleteCollection,
             "renameCollection": self._renameCollection,
@@ -37,6 +41,7 @@ class Command:
             "createCollection": 1,
             "listCollections": 1,
             "addToCollection": 2,
+            "addAlbumToCollection": 2,
             "removeFromCollection": 2,
             "deleteCollection": 1,
             "renameCollection": 2,
@@ -52,6 +57,67 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+    
+    def _addAlbumToCollection(self, album, collection):
+        if self.username == None:
+            print("Login to modifiy a collection.")
+            return True
+        
+        self.curs.execute(
+            """
+            SELECT * FROM collection
+            WHERE name LIKE %s AND
+            username LIKE %s
+            """, (collection, self.username))
+        
+        collectionData = self.curs.fetchone()
+        if collectionData == None:
+            print("No collection by that name")
+            return False
+
+        self.curs.execute(
+            """
+            SELECT albumid FROM album
+            WHERE name LIKE %s
+            """, (album,))
+
+        album_id = self.curs.fetchone()
+        if album_id == None:
+            print("No album by that name")
+            return False
+        
+        self.curs.execute(
+            """
+            SELECT songid FROM onalbum
+            WHERE albumid = %s
+            """, (album_id))
+        
+        song_ids = self.curs.fetchall()
+        if song_ids == None:
+            print("No songs in that album")
+            return False
+
+        self.curs.execute(
+                """
+                SELECT songid FROM collectioncontains
+                WHERE collectionid = %s AND
+                username = %s
+                """, (collectionData[0], self.username))
+        songs_in_collection = self.curs.fetchall()
+        for song_id in song_ids:
+            if not (song_id in songs_in_collection):
+                self.curs.execute(
+                    """
+                    INSERT INTO collectioncontains(collectionid, username, songid)
+                    VALUES(%s, %s, %s)
+                    """, (collectionData[0], self.username, song_id[0]))
+                print("adding song with id: ", song_id[0])
+
+                self.conn.commit()
+            else:
+                print("song already in collection")
+
         return True
 
     def _lookup(self, email):
@@ -364,6 +430,7 @@ class Command:
             "deleteCollection <name>": deletes a collection
             "listCollections <username>": lists all collections
             "addToCollection <collection> <title>": add a song to a collection
+            "addAlbumToCollection <album> <collection>": add an album to a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
             "renameCollection <oldname> <newname>": rename a collection
             "search <searchterm>": searches for a song
