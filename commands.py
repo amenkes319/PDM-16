@@ -356,6 +356,7 @@ class Command:
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
+        pw = hashlib.sha256(pw.encode('UTF-8')).hexdigest()
         self.curs.execute(
             """
             INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime)
