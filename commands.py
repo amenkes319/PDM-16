@@ -7,6 +7,7 @@ class Command:
             "help": self._help,
             "signup": self._createAccount,
             "login": self._login,
+            "logout": self._logout,
             "follow": self._follow,
             "unfollow": self._unfollow,
             "play": self._play,
@@ -24,6 +25,7 @@ class Command:
             "help": 0,
             "signup": 5,
             "login": 2,
+            "logout": 0,
             "follow": 1,
             "unfollow": 1,
             "play": 1,
@@ -46,6 +48,15 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _logout(self):
+        if self.username == None:
+            print("Not currently logged in.")
+            return False
+        
+        print("Logged out of: " + self.username)
+        self.username = None
         return True
 
     def _renameCollection(self, collectionName, newName):
@@ -327,6 +338,7 @@ class Command:
             "help": prints this message
             "signup <username> <password> <firstname> <lastname> <email>": creates a new account
             "login <username> <password>": login in as username
+            "logout": logout
             "follow <username>": follow another user
             "unfollow <username>": unfollow another user
             "play <title>": listen to a song
