@@ -1,9 +1,6 @@
 import hashlib
 
 class Command:
-    # add album to collection
-    # remove album from collection
-    # sort and sorting direction param for search
     def __init__(self, conn):
         self.conn = conn
         self.curs = conn.cursor()
@@ -47,7 +44,7 @@ class Command:
             "removeFromCollection": 2,
             "deleteCollection": 1,
             "renameCollection": 2,
-            "search": 1,
+            "search": 2,
         }
 
     def execute(self, command, args):
@@ -498,7 +495,7 @@ class Command:
             "removeAlbumFromCollection <album> <collection>": remove an album from a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
             "renameCollection <oldname> <newname>": rename a collection
-            "search <searchterm>": searches for a song
+            "search <searchterm> <order>": searches for a song, order = ASC or DESC
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
@@ -550,9 +547,15 @@ class Command:
         for row in self.curs.fetchall():
             print(row)        
 
-    def _search(self, searchTerm):
+    def _search(self, searchTerm, sortOrder):
         searchTerm = searchTerm.lower()
-        self.curs.execute(
+        sortOrder = sortOrder.upper()
+
+        if (sortOrder != "ASC" and sortOrder != "DESC"):
+            sortOrder = "ASC" #default value: asc
+
+        if sortOrder == "ASC":
+            self.curs.execute(
             """
             SELECT s.Title AS SongName, ar.Name AS ArtistName, al.Name AS AlbumName, 
                 s.Length AS SongLength, COUNT(l.SongID) AS ListenCount
@@ -568,6 +571,24 @@ class Command:
             GROUP BY s.Title, ar.Name, al.Name, s.Length 
             ORDER BY s.Title ASC, ar.Name ASC;
             """, (f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%"))
+        else:
+            self.curs.execute(
+            """
+            SELECT s.Title AS SongName, ar.Name AS ArtistName, al.Name AS AlbumName, 
+                s.Length AS SongLength, COUNT(l.SongID) AS ListenCount
+            FROM Song s 
+            JOIN SongByArtist sa ON s.SongID = sa.SongID
+            JOIN Artist ar ON sa.ArtistID = ar.ArtistID
+            JOIN OnAlbum oa ON s.SongID = oa.SongID
+            JOIN Album al ON oa.AlbumID = al.AlbumID
+            JOIN SongGenre sg ON s.SongID = sg.SongID
+            JOIN Genre g ON sg.GenreID = g.GenreID
+            JOIN Listen l ON s.SongID = l.SongID
+            WHERE LOWER(s.Title) LIKE %s OR LOWER(ar.Name) LIKE %s OR LOWER(al.Name) LIKE %s OR LOWER(g.Name) LIKE %s
+            GROUP BY s.Title, ar.Name, al.Name, s.Length 
+            ORDER BY s.Title DESC, ar.Name DESC;
+            """, (f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%"))
+        
 
         for row in self.curs.fetchall():
             print(row)
