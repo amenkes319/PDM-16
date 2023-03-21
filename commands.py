@@ -11,6 +11,7 @@ class Command:
             "login": self._login,
             "logout": self._logout,
             "follow": self._follow,
+            "lookup": self._lookup,
             "unfollow": self._unfollow,
             "play": self._play,
             "playCollection": self._playCollection,
@@ -29,6 +30,7 @@ class Command:
             "login": 2,
             "logout": 0,
             "follow": 1,
+            "lookup": 1,
             "unfollow": 1,
             "play": 1,
             "playCollection": 1,
@@ -50,6 +52,17 @@ class Command:
             return False
 
         self.commands[command](*args)
+        return True
+
+    def _lookup(self, email):
+        self.curs.execute(
+            """
+            SELECT username FROM account 
+            WHERE email LIKE %s
+            """, (f"%{email}%",))
+
+        for row in self.curs.fetchall():
+            print(row)
         return True
 
     def _logout(self):
@@ -343,6 +356,7 @@ class Command:
             "login <username> <password>": login in as username
             "logout": logout
             "follow <username>": follow another user
+            "lookup <email>": look up a user by email
             "unfollow <username>": unfollow another user
             "play <title>": listen to a song
             "playCollection <name>": listen to an entire collection of songs
@@ -352,7 +366,7 @@ class Command:
             "addToCollection <collection> <title>": add a song to a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
             "renameCollection <oldname> <newname>": rename a collection
-            "search <searchterm>": searches for a collection
+            "search <searchterm>": searches for a song
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):

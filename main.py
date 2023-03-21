@@ -15,28 +15,22 @@ def login():
     password = login.get("password")
     return username, password
 
-def combineQuotedArgs(argsList):
+# multiple args in quotes (e.g. "hello world") wil get parsed to "Hello World" and gets rid of the quotes
+# single words in quotes (e.g. "hello") will not get rid of the quotes
+def combineQuotedArgs(args):
     newArgs = []
-    inQuotes = False
-    currentArg = ""
-
-    for arg in argsList:
-        if inQuotes:
-            currentArg += " " + arg
-            if arg.endswith(currentArg[0]) and len(currentArg) > 1:
-                inQuotes = False
-                newArgs.append(currentArg[1:-1])
-                currentArg = ""
+    i = 0
+    while i < len(args):
+        if args[i][0] == '"' and args[i][-1] != '"':
+            j = i + 1
+            while j < len(args) and args[j][-1] != '"':
+                j += 1
+            combinedArg = " ".join(args[i:j+1])
+            newArgs.append(combinedArg[1:-1] if combinedArg.startswith('"') and combinedArg.endswith('"') else combinedArg)
+            i = j + 1
         else:
-            if arg.startswith('"') or arg.startswith("'"):
-                inQuotes = True
-                currentArg = arg.strip(arg[0])
-            else:
-                newArgs.append(arg)
-
-    if inQuotes:
-        newArgs.append(currentArg[:-1])
-
+            newArgs.append(args[i])
+            i += 1
     return newArgs
 
 def main():
@@ -68,7 +62,10 @@ def main():
                 cmd = userInput.split(" ")[0]
                 args = userInput.split(" ")[1:]
                 args = combineQuotedArgs(args)
+
                 valid = command.execute(cmd, args)
+                if cmd == "quit":
+                    running = False
     except Exception as e:
         print(e)
         print("Connection failed")
