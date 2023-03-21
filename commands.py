@@ -1,3 +1,5 @@
+import hashlib
+
 class Command:
     def __init__(self, conn):
         self.conn = conn
@@ -309,6 +311,7 @@ class Command:
         return True
 
     def _login(self, username, password):
+        password = hashlib.sha256(password.encode('UTF-8')).hexdigest()
         self.curs.execute(
             """
             SELECT * FROM account as a 
