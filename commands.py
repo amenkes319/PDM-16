@@ -593,7 +593,7 @@ class Command:
         elif sortBy == "genre":
             sortBy = "g.name"
         elif sortBy == "year":
-            sortBy = "YEAR(s.releasedate)"
+            sortBy = "EXTRACT (YEAR FROM s.releasedate)"
 
         self.curs.execute(
             """
@@ -608,7 +608,7 @@ class Command:
             JOIN Genre g ON sg.GenreID = g.GenreID
             JOIN Listen l ON s.SongID = l.SongID
             WHERE LOWER(s.Title) LIKE %s OR LOWER(ar.Name) LIKE %s OR LOWER(al.Name) LIKE %s OR LOWER(g.Name) LIKE %s
-            GROUP BY s.Title, ar.Name, al.Name, s.Length 
+            GROUP BY s.Title, ar.Name, al.Name, s.Length, s.releasedate, g.name
             ORDER BY """ + sortBy + """ """ + sortOrder + """
             """, (f"%{searchTitle}%", f"%{searchArtist}%", f"%{searchAlbum}%", f"%{searchGenre}%"))
 
