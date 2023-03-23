@@ -506,7 +506,7 @@ class Command:
             "removeAlbumFromCollection <album> <collection>": remove an album from a collection
             "removeFromCollection <collection> <title>": remove a song from a collection
             "renameCollection <oldname> <newname>": rename a collection
-            "search <searchterm> <order>": searches for a song, order = ASC or DESC
+            "search <searchBy> <searchTerm> <sortBy> <sortOrder>": searches for a song
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
