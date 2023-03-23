@@ -234,7 +234,18 @@ class Command:
         if self.username == None:
             print("Login to delete a collection.")
             return True
-        
+
+        self.curs.execute(
+            """
+            DELETE FROM collectioncontains
+            WHERE collectionid IN
+                (SELECT collectionid
+                FROM collection
+                WHERE name = %s AND username = %s)
+            AND username = %s   
+            """, (collection, self.username, self.username))
+        self.conn.commit()
+
         self.curs.execute(
             """
             DELETE FROM collection
