@@ -44,7 +44,7 @@ class Command:
             "removeFromCollection": 2,
             "deleteCollection": 1,
             "renameCollection": 2,
-            "search": 2,
+            "search": 4,
         }
 
     def execute(self, command, args):
@@ -556,17 +556,46 @@ class Command:
             ORDER BY c.Name ASC
             """, (username,))
         for row in self.curs.fetchall():
-            print(row)        
+            print(row)
 
-    def _search(self, searchTerm, sortOrder):
+    def _search(self, searchBy, searchTerm, sortBy, sortOrder):
         searchTerm = searchTerm.lower()
         sortOrder = sortOrder.upper()
+        searchBy = searchBy.lower()
+        sortBy = sortBy.lower()
+
+        if searchBy not in {"title", "artist", "genre", "album"}:
+            print("searchBy must be title, artist, genre, or album")
+            return
+
+        if sortBy not in {"title", "artist", "genre", "year"}:
+            print("sortBy must be title, artist, genre, or year")
+            return
 
         if (sortOrder != "ASC" and sortOrder != "DESC"):
-            sortOrder = "ASC" #default value: asc
+            sortOrder = "ASC" # default value: asc
 
-        if sortOrder == "ASC":
-            self.curs.execute(
+        searchTitle = searchArtist = searchAlbum = searchGenre = "☺"
+
+        if searchBy == "title":
+            searchTitle = searchTerm
+        elif searchBy == "artist":
+            searchArtist = searchTerm
+        elif searchBy == "genre":
+            searchGenre = searchTerm
+        elif searchBy == "album":
+            searchAlbum = searchTerm
+
+        if sortBy == "title":
+            sortBy = "s.Title"
+        elif sortBy == "artist":
+            sortBy = "ar.name"
+        elif sortBy == "genre":
+            sortBy = "g.name"
+        elif sortBy == "year":
+            sortBy = "YEAR(s.releasedate)"
+
+        self.curs.execute(
             """
             SELECT s.Title AS SongName, ar.Name AS ArtistName, al.Name AS AlbumName, 
                 s.Length AS SongLength, COUNT(l.SongID) AS ListenCount
@@ -580,26 +609,8 @@ class Command:
             JOIN Listen l ON s.SongID = l.SongID
             WHERE LOWER(s.Title) LIKE %s OR LOWER(ar.Name) LIKE %s OR LOWER(al.Name) LIKE %s OR LOWER(g.Name) LIKE %s
             GROUP BY s.Title, ar.Name, al.Name, s.Length 
-            ORDER BY s.Title ASC, ar.Name ASC;
-            """, (f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%"))
-        else:
-            self.curs.execute(
-            """
-            SELECT s.Title AS SongName, ar.Name AS ArtistName, al.Name AS AlbumName, 
-                s.Length AS SongLength, COUNT(l.SongID) AS ListenCount
-            FROM Song s 
-            JOIN SongByArtist sa ON s.SongID = sa.SongID
-            JOIN Artist ar ON sa.ArtistID = ar.ArtistID
-            JOIN OnAlbum oa ON s.SongID = oa.SongID
-            JOIN Album al ON oa.AlbumID = al.AlbumID
-            JOIN SongGenre sg ON s.SongID = sg.SongID
-            JOIN Genre g ON sg.GenreID = g.GenreID
-            JOIN Listen l ON s.SongID = l.SongID
-            WHERE LOWER(s.Title) LIKE %s OR LOWER(ar.Name) LIKE %s OR LOWER(al.Name) LIKE %s OR LOWER(g.Name) LIKE %s
-            GROUP BY s.Title, ar.Name, al.Name, s.Length 
-            ORDER BY s.Title DESC, ar.Name DESC;
-            """, (f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%", f"%{searchTerm}%"))
-        
+            ORDER BY """ + sortBy + """ """ + sortOrder + """
+            """, (f"%{searchTitle}%", f"%{searchArtist}%", f"%{searchAlbum}%", f"%{searchGenre}%"))
 
         for row in self.curs.fetchall():
             print(row)
