@@ -538,7 +538,7 @@ class Command:
                 COUNT(cc.SongId) AS NumberOfSongs, 
                 SUM(s.Length) AS TotalDuration 
             FROM Collection c 
-            JOIN CollectionContains cc ON c.CollectionID = cc.CollectionID 
+            JOIN CollectionContains cc ON c.CollectionID = cc.CollectionID AND c.username = cc.username 
             JOIN Song s ON cc.SongId = s.SongID 
             WHERE c.Username = %s 
             GROUP BY c.Name 
