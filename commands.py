@@ -188,8 +188,9 @@ class Command:
             WHERE email LIKE %s
             """, (f"%{email}%",))
 
+        print("Username")
         for row in self.curs.fetchall():
-            print(row)
+            print(row[0])
         return True
 
     def _logout(self):
@@ -555,8 +556,13 @@ class Command:
             GROUP BY c.Name 
             ORDER BY c.Name ASC
             """, (username,))
+        print("Collection Name | Number of Songs | Length (min)")
+        print("--------------------------------------------------------------")
         for row in self.curs.fetchall():
-            print(row)
+            name = row[0]
+            numSongs = row[1]
+            length = row[2] / 60
+            print(name, "|", numSongs, "|", "{:.2f}".format(length))
 
     def _search(self, searchBy, searchTerm, sortBy, sortOrder):
         searchTerm = searchTerm.lower()
@@ -613,4 +619,10 @@ class Command:
             """, (f"%{searchTitle}%", f"%{searchArtist}%", f"%{searchAlbum}%", f"%{searchGenre}%"))
 
         for row in self.curs.fetchall():
-            print(row)
+            title = row[0]
+            artist = row[1]
+            album = row[2]
+            length = row[3] / 60
+            listenCount = row[4]
+
+            print(title, "|", artist, "|", album, "|", length, "|", listenCount)
