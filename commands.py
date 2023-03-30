@@ -1,4 +1,6 @@
 import hashlib
+import random
+import string
 
 class Command:
     def __init__(self, conn):
@@ -463,6 +465,19 @@ class Command:
         return True
 
     def _login(self, username, password):
+        self.curs.execute(
+            """
+            SELECT salt FROM account as a
+            WHERE a.username = %s
+            """ , (username,))
+        salt = self.curs.fetchone()
+
+        if (salt == None):
+            print("Incorrect login information")
+            return False
+        salt = salt[0]
+        password = password + salt
+
         password = hashlib.sha256(password.encode('UTF-8')).hexdigest()
         self.curs.execute(
             """
@@ -511,12 +526,15 @@ class Command:
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
+        salt = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+
+        pw += salt
         pw = hashlib.sha256(pw.encode('UTF-8')).hexdigest()
         self.curs.execute(
             """
-            INSERT INTO account (username, password, firstname, lastname, email, creationDateTime, lastAccessDateTime)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (user, pw, firstname, lastname, email, "now()", "now()"))
+            INSERT INTO account (username, password, salt, firstname, lastname, email, creationDateTime, lastAccessDateTime)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (user, pw, salt, firstname, lastname, email, "now()", "now()"))
         self.conn.commit()
 
     def _createCollection(self, name):
