@@ -26,6 +26,10 @@ class Command:
             "deleteCollection": self._deleteCollection,
             "renameCollection": self._renameCollection,
             "search": self._search,
+            "recommendMonth": self._recommendMonth,
+            "recommendFriends": self._recommendFriends,
+            "recommendGenres": self._recommendGenres,
+            "recommendSongs": self._recommendSongs,
             "quit": None,
         }
         self.commandArgCount = {
@@ -46,6 +50,10 @@ class Command:
             "removeFromCollection": 2,
             "deleteCollection": 1,
             "renameCollection": 2,
+            "recommendMonth": 0,
+            "recommendFriends": 0,
+            "recommendGenres": 0,
+            "recommendSongs": 0,
             "search": 4,
         }
 
@@ -581,6 +589,26 @@ class Command:
             numSongs = row[1]
             length = row[2] / 60
             print(name, "|", numSongs, "|", "{:.2f}".format(length))
+
+    def _recommendMonth(self):
+        self.curs.execute(
+            """
+            SELECT s.title
+            FROM song AS s INNER JOIN listen AS l 
+            (ON
+            WHERE c.Username = %s 
+            GROUP BY c.Name 
+            ORDER BY c.Name ASC
+            """)
+
+    def _recommendFriends(self):
+        pass
+
+    def _recommendGenres(self):
+        pass
+
+    def _recommendSongs(self):
+        pass
 
     def _search(self, searchBy, searchTerm, sortBy, sortOrder):
         searchTerm = searchTerm.lower()
