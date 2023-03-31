@@ -598,7 +598,8 @@ class Command:
             ON (s.songid = l.songid)
             WHERE l.listendatetime > (now() - INTERVAL '30 00:00:00.0' DAY TO SECOND)
             GROUP BY s.songid
-            ORDER BY num DESC;
+            ORDER BY num DESC
+            LIMIT 50;
             """)
         print("Song Name | Listens in the last 30 Days")
         print("---------------------------------------")
@@ -608,7 +609,28 @@ class Command:
             print(name, "|", numPlays, "|")
 
     def _recommendFriends(self):
-        pass
+        if self.username == None:
+            print("Login to follow another user")
+            return True
+
+        self.curs.execute(
+            """
+            SELECT s.title, count(s.songid) as num
+            FROM song AS s INNER JOIN listen AS l
+            ON (s.songid = l.songid)
+            INNER JOIN following AS f
+            ON (l.username = f.followedusername)
+            WHERE f.followerusername = %s
+            GROUP BY s.songid
+            ORDER BY num DESC
+            LIMIT 50;
+            """, self.username)
+        print("Song Name | Listens")
+        print("-------------------")
+        for row in self.curs.fetchall():
+            name = row[0]
+            numPlays = row[1]
+            print(name, "|", numPlays, "|")
 
     def _recommendGenres(self):
         pass
