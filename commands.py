@@ -593,13 +593,19 @@ class Command:
     def _recommendMonth(self):
         self.curs.execute(
             """
-            SELECT s.title
-            FROM song AS s INNER JOIN listen AS l 
-            (ON
-            WHERE c.Username = %s 
-            GROUP BY c.Name 
-            ORDER BY c.Name ASC
+            SELECT s.title, count(s.songid) as num
+            FROM song AS s INNER JOIN listen AS l
+            ON (s.songid = l.songid)
+            WHERE l.listendatetime > (now() - INTERVAL '30 00:00:00.0' DAY TO SECOND)
+            GROUP BY s.songid
+            ORDER BY num DESC;
             """)
+        print("Song Name | Listens in the last 30 Days")
+        print("---------------------------------------")
+        for row in self.curs.fetchall():
+            name = row[0]
+            numPlays = row[1]
+            print(name, "|", numPlays, "|")
 
     def _recommendFriends(self):
         pass
