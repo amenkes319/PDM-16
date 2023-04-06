@@ -57,6 +57,32 @@ class Command:
             "search": 4,
         }
 
+    def _help(self):
+        print("""Commands:
+            "help": prints this message
+            "signup <username> <password> <firstname> <lastname> <email>": creates a new account
+            "login <username> <password>": login in as username
+            "logout": logout
+            "follow <username>": follow another user
+            "lookup <email>": look up a user by email
+            "unfollow <username>": unfollow another user
+            "play <title>": listen to a song
+            "playCollection <name>": listen to an entire collection of songs
+            "createCollection <name>": creates a new collection
+            "deleteCollection <name>": deletes a collection
+            "listCollections <username>": lists all collections
+            "addToCollection <collection> <title>": add a song to a collection
+            "addAlbumToCollection <album> <collection>": add an album to a collection
+            "removeAlbumFromCollection <album> <collection>": remove an album from a collection
+            "removeFromCollection <collection> <title>": remove a song from a collection
+            "renameCollection <oldname> <newname>": rename a collection
+            "search <searchBy> <searchTerm> <sortBy> <sortOrder>": searches for a song
+            "recommendMonth: shows the top 50 most popular song of the month
+            "recommendFriends: shows the top 50 most popular songs among your friends
+            "recommendGenres: shows the top 5 most popular genres of the month
+            "recommendSongs: recommends songs based on your play history and play history of similar users
+            "quit": quits the program""")
+
     def execute(self, command, args):
         if command == "quit":
             return True
@@ -510,28 +536,6 @@ class Command:
         print("Logged in as: " + accountData[0])
         self.username = accountData[0]
         return True
-
-    def _help(self):
-        print("""Commands:
-            "help": prints this message
-            "signup <username> <password> <firstname> <lastname> <email>": creates a new account
-            "login <username> <password>": login in as username
-            "logout": logout
-            "follow <username>": follow another user
-            "lookup <email>": look up a user by email
-            "unfollow <username>": unfollow another user
-            "play <title>": listen to a song
-            "playCollection <name>": listen to an entire collection of songs
-            "createCollection <name>": creates a new collection
-            "deleteCollection <name>": deletes a collection
-            "listCollections <username>": lists all collections
-            "addToCollection <collection> <title>": add a song to a collection
-            "addAlbumToCollection <album> <collection>": add an album to a collection
-            "removeAlbumFromCollection <album> <collection>": remove an album from a collection
-            "removeFromCollection <collection> <title>": remove a song from a collection
-            "renameCollection <oldname> <newname>": rename a collection
-            "search <searchBy> <searchTerm> <sortBy> <sortOrder>": searches for a song
-            "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
         salt = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
