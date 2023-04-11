@@ -30,6 +30,7 @@ class Command:
             "recommendFriends": self._recommendFriends,
             "recommendGenres": self._recommendGenres,
             "recommendSongs": self._recommendSongs,
+            "profile": self._profile,
             "quit": None,
         }
         self.commandArgCount = {
@@ -54,6 +55,7 @@ class Command:
             "recommendFriends": 0,
             "recommendGenres": 0,
             "recommendSongs": 0,
+            "profile": 2,
             "search": 4,
         }
 
@@ -68,6 +70,83 @@ class Command:
         self.commands[command](*args)
         return True
     
+    def _profile(self, username, searchType):
+        self.curs.execute(
+            """
+            SELECT COUNT(collection.name) FROM account as account
+            INNER JOIN collection collection on account.username = collection.username
+            WHERE account.username = %s;
+            """, (username,))
+        collectionCount = self.curs.fetchone()
+
+        if collectionCount == None:
+            collectionCount = 0
+        else:
+            collectionCount = collectionCount[0]
+
+        self.curs.execute(
+            """
+            SELECT COUNT(follower.followedusername) FROM account as account
+            INNER JOIN following follower ON account.username = follower.followedusername
+            WHERE username = %s;
+            """, (username,))
+        numFollowers = self.curs.fetchone()
+
+        if numFollowers == None:
+            numFollowers = 0
+        else:
+            numFollowers = numFollowers[0]
+
+        self.curs.execute(
+            """
+            SELECT COUNT(follower.followedusername) FROM account as account
+            INNER JOIN following follower ON account.username = follower.followerusername
+            WHERE username = %s;
+            """, (username,))
+        numFollowing = self.curs.fetchone()
+
+        if numFollowing == None:
+            numFollowing = 0
+        else:
+            numFollowing = numFollowing[0]
+        print("User Profile for:", username)
+        print(" Number of collections:", str(collectionCount))
+        print(" Number of followers:", str(collectionCount))
+        print(" Number of following:", str(collectionCount))
+        if (searchType == "collection"):
+            self.curs.execute(
+                """
+                SELECT a.name, COUNT(cc.songid)
+                FROM account as ac
+                INNER JOIN collectioncontains AS cc ON (cc.username = ac.username)
+                INNER JOIN song AS s ON (s.songid = cc.songid)
+                INNER JOIN songbyartist AS sba ON (s.songid = sba.songid)
+                INNER JOIN artist AS a ON (a.artistid = sba.artistid)
+                WHERE ac.username LIKE %s
+                GROUP BY a.name, ac.username
+                ORDER BY COUNT(cc.songid) DESC
+                LIMIT 10
+                """, (username,))
+        else:
+            self.curs.execute(
+                """
+                SELECT artist.name as artist, COUNT(l.songid) as plays FROM account as a
+                INNER JOIN listen as l on a.username = l.username
+                INNER JOIN songbyartist as sba on sba.songid = l.songid
+                INNER JOIN artist as artist on sba.artistid = artist.artistid
+                WHERE a.username = %s
+                GROUP BY artist.name
+                ORDER BY COUNT(l.songid) DESC LIMIT 10;
+            """, (username,))
+        
+        print(" Top 10 artists: ")
+        r = 1
+        for row in self.curs.fetchall():
+            name = row[0]
+            numPlays = row[1]
+            print(" "+str(r)+".", name)
+            r += 1
+
     def _removeAlbumFromCollection(self, album, collection):
         if self.username == None:
             print("Login to modifiy a collection.")
@@ -531,6 +610,7 @@ class Command:
             "removeFromCollection <collection> <title>": remove a song from a collection
             "renameCollection <oldname> <newname>": rename a collection
             "search <searchBy> <searchTerm> <sortBy> <sortOrder>": searches for a song
+            "profile <username> <searchTerm>": displays a user's profile (searchTerm='collection' or 'plays')
             "quit": quits the program""")
 
     def _createAccount(self, user, pw, firstname, lastname, email):
