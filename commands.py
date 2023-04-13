@@ -739,7 +739,23 @@ class Command:
             print(name, "|", numPlays, "|")
 
     def _recommendGenres(self):
-        pass
+        self.curs.execute(
+            """
+            SELECT name AS genrename, count AS listencount 
+            FROM (SELECT genreid, count(s.songid) AS count FROM 
+            listen INNER JOIN songgenre s ON listen.songid = s.songid 
+            WHERE EXTRACT(month FROM listendatetime) = EXTRACT(month FROM now()) 
+            AND EXTRACT(year FROM listendatetime) = EXTRACT(year FROM now()) 
+            GROUP BY genreid ORDER BY count DESC LIMIT 5) AS top 
+            INNER JOIN genre ON top.genreid = genre.genreid;
+            """
+        )
+        print("Top Genres This Month")
+        print("---------------------")
+        for row in self.curs.fetchall():
+            name = row[0]
+            numPlays = row[1]
+            print(name, "\t\t\t|", numPlays, "Listens |")
 
     def _recommendSongs(self):
         pass
