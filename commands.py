@@ -755,7 +755,7 @@ class Command:
         for row in self.curs.fetchall():
             name = row[0]
             numPlays = row[1]
-            print(name, "\t\t\t|", numPlays, "Listens |")
+            print(numPlays, "Listens \t|", name)
 
     def _recommendSongs(self):
         pass
