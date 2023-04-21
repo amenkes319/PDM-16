@@ -758,12 +758,31 @@ class Command:
         print("Top Genres This Month")
         print("---------------------")
         for row in self.curs.fetchall():
-            name = row[0]
+            name = row[0].strip()
             numPlays = row[1]
             print(numPlays, "Listens \t|", name)
 
     def _recommendSongs(self):
-        pass
+            self.curs.execute(
+                """
+                SELECT title, listens FROM
+                (SELECT songid as notmysong, count(username) AS listens FROM
+                (SELECT DISTINCT username AS notme, mysong FROM
+                (SELECT songid as mysong FROM listen where listen.username = 'crf3480') AS mysongs
+                INNER JOIN listen on mysongs.mysong = listen.songid) AS otherusers
+                INNER JOIN listen on notme=listen.username
+                WHERE songid NOT IN (SELECT songid AS mysong FROM listen where listen.username = 'crf3480')
+                GROUP BY songid
+                ORDER BY listens DESC) AS alias
+                INNER JOIN song ON song.songid = notmysong
+                ORDER BY listens DESC LIMIT 5
+                """
+            )
+            print("Users That Listen To Songs You Listen To Also Listen To...")
+            print("----------------------------------------------------------")
+            for row in self.curs.fetchall():
+                name = row[0].strip()
+                print(name)
 
     def _search(self, searchBy, searchTerm, sortBy, sortOrder):
         searchTerm = searchTerm.lower()
