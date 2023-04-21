@@ -730,13 +730,18 @@ class Command:
             GROUP BY s.songid
             ORDER BY num DESC
             LIMIT 50;
-            """, self.username)
+            """, (self.username,))
         print("Song Name | Listens")
         print("-------------------")
-        for row in self.curs.fetchall():
-            name = row[0]
-            numPlays = row[1]
-            print(name, "|", numPlays, "|")
+
+        t = self.curs.fetchall()
+        if (t):
+            for row in t:
+                name = row[0]
+                numPlays = row[1]
+                print(name, "|", numPlays, "|")
+        else:
+            return
 
     def _recommendGenres(self):
         self.curs.execute(
