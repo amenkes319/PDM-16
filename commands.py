@@ -707,12 +707,13 @@ class Command:
             ORDER BY num DESC
             LIMIT 50;
             """)
-        print("Song Name | Listens in the last 30 Days")
+        print("Listens\t| Song Title")
         print("---------------------------------------")
         for row in self.curs.fetchall():
-            name = row[0]
+            name = row[0].strip()
             numPlays = row[1]
-            print(name, "|", numPlays, "|")
+            print(numPlays, "\t|", name)
+        print("---------------------------------------\n")
 
     def _recommendFriends(self):
         if self.username == None:
@@ -731,17 +732,13 @@ class Command:
             ORDER BY num DESC
             LIMIT 50;
             """, (self.username,))
-        print("Song Name | Listens")
-        print("-------------------")
-
-        t = self.curs.fetchall()
-        if (t):
-            for row in t:
-                name = row[0]
-                numPlays = row[1]
-                print(name, "|", numPlays, "|")
-        else:
-            return
+        print("Listens\t| Song Title")
+        print("---------------------------------------")
+        for row in self.curs.fetchall():
+            name = row[0].strip()
+            numPlays = row[1]
+            print(numPlays, "\t|", name)
+        print("---------------------------------------\n")
 
     def _recommendGenres(self):
         self.curs.execute(
@@ -756,11 +753,12 @@ class Command:
             """
         )
         print("Top Genres This Month")
-        print("---------------------")
+        print("---------------------------------------")
         for row in self.curs.fetchall():
             name = row[0].strip()
             numPlays = row[1]
             print(numPlays, "Listens \t|", name)
+        print("---------------------------------------\n")
 
     def _recommendSongs(self):
             self.curs.execute(
@@ -783,6 +781,7 @@ class Command:
             for row in self.curs.fetchall():
                 name = row[0].strip()
                 print(name)
+            print("----------------------------------------------------------\n")
 
     def _search(self, searchBy, searchTerm, sortBy, sortOrder):
         searchTerm = searchTerm.lower()
