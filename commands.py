@@ -776,7 +776,7 @@ class Command:
                 ORDER BY listens DESC) AS alias
                 INNER JOIN song ON song.songid = notmysong
                 ORDER BY listens DESC LIMIT 5
-                """, (self.username)
+                """, (self.username, self.username)
             )
             print("Users That Listen To Songs You Listen To Also Listen To...")
             print("----------------------------------------------------------")
