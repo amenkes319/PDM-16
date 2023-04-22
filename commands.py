@@ -137,8 +137,8 @@ class Command:
             numFollowing = numFollowing[0]
         print("User Profile for:", username)
         print(" Number of collections:", str(collectionCount))
-        print(" Number of followers:", str(collectionCount))
-        print(" Number of following:", str(collectionCount))
+        print(" Number of followers:", str(numFollowers))
+        print(" Number of following:", str(numFollowing))
         if (searchType == "collection"):
             self.curs.execute(
                 """
